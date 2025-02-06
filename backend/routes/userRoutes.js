@@ -176,6 +176,107 @@ userRouter.post("/api/events",authMiddleware,async (req,res)=>{
     }
 })
 
+userRouter.get("/api/events",async (req,res)=>{
+    const events= await Event.find({})
+    res.status(201).json({
+        Events:events.map(event=>({
+            title:event.title,
+            description:event.description,
+            location:event.location,
+            date:event.date,
+            createdBy:event.createdBy
+        }))
+    })
+})
+
+userRouter.get("/api/events/:title",async(req,res)=>{
+    try
+        {const eventTitle= req.params.title;
+        const customEvent= await Event.find({
+            title:{
+                $regex: new RegExp(eventTitle,"i")
+            }
+        })
+        if(!customEvent){
+            return res.status(404).json({
+                message:"Event does not exists"
+            })
+        }
+        res.status(201).json({
+            message:"Event Found",
+            Event:{
+                customEvent
+            }
+        })}
+    catch(error){
+            console.log("Error occured: ",error)
+            return res.status(500).json({
+                message:"Internal Server Error "
+            })
+        }
+})
+
+
+userRouter.put("/api/events/:id",authMiddleware,async(req,res)=>{
+    try{
+        const {id} =req.params;
+        const userId=req.userId;
+
+        const event =await Event.findById(
+            id
+        )
+        if(!event){
+            return res.status(404).json({
+                message:"Event does not exists"
+            })
+        }
+
+        if(event.createdBy.toString()!==userId){
+            return res.status(403).json({
+                message:"You are not authorized to edit this event"
+            })
+        }
+        const updateEvent= await Event.findByIdAndUpdate(id, req.body,{new:true, runValidators: true })
+        res.status(200).json({
+            message: "Event updated successfully",
+            event: updateEvent
+        });
+    }catch(err){
+        console.error("Some Error Occured: ",err);
+        return res.status(500).json({
+            message:"Internal Server Error"
+        })
+    }
+})
+
+userRouter.delete("/api/events/:id",authMiddleware,async (req,res)=>{
+    try{
+        const {id}= req.params;
+        const userId=req.userId;
+
+        const event = await Event.findById(id)
+        if(!event){
+            return res.status(404).json({
+                message:"Event does not exists"
+            })
+        }
+        if(event.createdBy.toString()!==userId){
+            return res.status(403).json({
+                message:"You are NOT authorized to Delete the Event"
+            })
+        }
+        await Event.findByIdAndDelete({id})
+        res.status(200).json({
+            message:"Deleted Event Successfully"
+        })
+    }catch(error){
+        console.error("Some Error Occured: ",error)
+        return res.status(500).json({
+            message:"Internal Server Error"
+        })
+    }
+})
+
 module.exports={
     userRouter
 }
