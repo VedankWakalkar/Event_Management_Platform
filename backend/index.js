@@ -3,6 +3,7 @@ const cors=require("cors");
 const dotenv=require("dotenv")
 const mongoose=require("mongoose");
 const { userRouter } = require("./routes/userRoutes");
+const session=require("express-session")
 dotenv.config()
 
 const app=express();
@@ -15,7 +16,14 @@ mongoose.connect(DATABASE_URL).then(()=>{
 }).catch((error)=>{
     console.error("Some error Occured ",error)
 })
-
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,  
+        resave: false,
+        saveUninitialized: false,
+        cookie: { secure: false }
+    })
+);
 app.use("/user",userRouter)
 
 const PORT=3000;
