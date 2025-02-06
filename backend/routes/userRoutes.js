@@ -285,8 +285,18 @@ userRouter.post("/api/events/:id/register",authMiddleware,async(req,res)=>{
             return res.status(404).json({
                 message:"Event does not exists"
             })
+        }    
+        if(event.registeredUser.includes(userId)){
+            return res.status(400).json({
+                message:"User Already Registered"
+            })
         }
-        
+
+        event.registeredUser.push(userId);
+        await event.save()
+        res.status(200).json({
+            message:"User Registered to Event Successfully"
+        })
 
     }catch(error){
         console.error("Some Error Occured: ",error);
@@ -295,6 +305,48 @@ userRouter.post("/api/events/:id/register",authMiddleware,async(req,res)=>{
         })
     }
 })
+
+userRouter.get("api/events/:id/registrations",authMiddleware,async (req,res)=>{
+    try{
+        const {id}=req.params;
+        const userId=req.userId;
+        
+        const event = await Event.findById(id).populate("registeredUsers", "name email");;
+        if(!event){
+            return res.status(404).json({
+                message:"Event does not exists"
+            })
+        }
+        
+        if(event.createdBy.toString()!==userId){
+            return res.status(403).json({
+                message:"You are not allowed to See to event information!"
+            })
+        }
+
+        res.status(200).json({
+            registeredUser:event.registeredUser
+        })
+
+    }catch(error){
+        console.error("Some Error Occured: ",error)
+        return res.status(500).json({
+            message:"Internal Server Error"
+        })
+    }
+})
+
+userRouter.get("/api/events/my-events", authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const events = await Event.find({ createdBy: userId });
+        
+        res.status(200).json({ events });
+    } catch (error) {
+        console.error("Error occurred: ", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
 
 module.exports={
     userRouter
