@@ -190,8 +190,8 @@ userRouter.get("/api/events",async (req,res)=>{
 })
 
 userRouter.get("/api/events/:title",async(req,res)=>{
-    try
-        {const eventTitle= req.params.title;
+    try{
+        const eventTitle= req.params;
         const customEvent= await Event.find({
             title:{
                 $regex: new RegExp(eventTitle,"i")
@@ -215,7 +215,6 @@ userRouter.get("/api/events/:title",async(req,res)=>{
             })
         }
 })
-
 
 userRouter.put("/api/events/:id",authMiddleware,async(req,res)=>{
     try{
@@ -271,6 +270,26 @@ userRouter.delete("/api/events/:id",authMiddleware,async (req,res)=>{
         })
     }catch(error){
         console.error("Some Error Occured: ",error)
+        return res.status(500).json({
+            message:"Internal Server Error"
+        })
+    }
+})
+
+userRouter.post("/api/events/:id/register",authMiddleware,async(req,res)=>{
+    try{    
+        const {id}=req.params;
+        const userId= req.userId;
+        const event =await Event.findById(id);
+        if(!event){
+            return res.status(404).json({
+                message:"Event does not exists"
+            })
+        }
+        
+
+    }catch(error){
+        console.error("Some Error Occured: ",error);
         return res.status(500).json({
             message:"Internal Server Error"
         })
