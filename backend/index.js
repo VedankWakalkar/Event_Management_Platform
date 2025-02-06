@@ -3,7 +3,8 @@ const cors=require("cors");
 const dotenv=require("dotenv")
 const mongoose=require("mongoose");
 const { userRouter } = require("./routes/userRoutes");
-const session=require("express-session")
+const session=require("express-session");
+const { adminRouter } = require("./routes/adminRoutes");
 dotenv.config()
 
 const app=express();
@@ -24,7 +25,9 @@ app.use(
         cookie: { secure: false }
     })
 );
+
 app.use("/user",userRouter)
+app.use("/api/admin",adminRouter)
 
 const PORT=3000;
 app.listen(PORT,()=>{
