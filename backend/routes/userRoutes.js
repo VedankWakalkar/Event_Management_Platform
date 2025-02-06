@@ -1,9 +1,13 @@
-const { jwt } = require("jsonwebtoken");
+const jwt  = require("jsonwebtoken");
 const User = require("../model/UserModel");
-
+const express=require("express");
 const zod=require('zod')
-const userRouter=express.router();
+const bcrypt=require('bcrypt')
+const userRouter=express.Router();
+const dotenv =require("dotenv")
+dotenv.config();
 
+const JWT_SECRET=process.env.JWT_SECRET;
 const userInputSchema=zod.object({
     username:zod.string(),
     email:zod.string().email(),
@@ -39,36 +43,37 @@ userRouter.post("/api/auth/register", async (req,res)=>{
         ...req.body,
         password:hashedPassword
     })
-    const JWT_SECRET=process.env.JWT_SECRET;
-    const token= jwt.sign({_id: newUser._id},JWT_SECRET,{
-        expiresIn:'90d'
-    });
+    
+    const token= jwt.sign({_id: newUser._id},JWT_SECRET);
 
     res.status(201).json({
         message:"User Created Successfully",
         status:"success",
         token:token,
         user:{
-            newUser
+            _id: newUser._id,
+            username: newUser.username,
+            email: newUser.email
         }
     })}catch(error){
-        console.error("Some error Occured: ",error)
+        console.error("Some error Occurred:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 })
 
 userRouter.post("/api/auth/login",async (req,res)=>{
     try{
         const {success}=userLoginSchema.safeParse(req.body);
-        console("Zod validation : ",success);
+        console.log("Zod validation : ",success);
         if(!success){
             return res.status(411).json({
                 message:"Invalid Credentials format"
             })
         }
         const user = await User.findOne({
-            email
+            email:req.body.email
         })
-        if(user){
+        if(!user){
             return res.status(404).json({
                 message:"User Not Found!"
             })
@@ -79,9 +84,7 @@ userRouter.post("/api/auth/login",async (req,res)=>{
                 message:"Incorrect Password"
             })
         }
-        const token=jwt.sign({_id:user._id},JWT_SECRET,{
-            expiresIn:"90d"
-        })
+        const token=jwt.sign({_id:user._id},JWT_SECRET)
         res.status(200).json({
             status:"success",
             token:token,
@@ -93,7 +96,8 @@ userRouter.post("/api/auth/login",async (req,res)=>{
             }
         })
     }catch(error){
-        console.error("Error Occured: ",error)
+        console.error("Error Occured: ",error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 })
 
