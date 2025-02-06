@@ -1,5 +1,5 @@
 const express=require("express");
-const { authMiddleware } = require("../Middleware");
+const { authMiddleware } = require("../Middlewares/Middleware");
 const User = require("../model/UserModel");
 const { Event } = require("../model/EventModel");
 

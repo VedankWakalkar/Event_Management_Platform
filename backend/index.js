@@ -5,6 +5,7 @@ const mongoose=require("mongoose");
 const { userRouter } = require("./routes/userRoutes");
 const session=require("express-session");
 const { adminRouter } = require("./routes/adminRoutes");
+const { guestRouter } = require("./routes/guestRoute");
 dotenv.config()
 
 const app=express();
@@ -28,6 +29,7 @@ app.use(
 
 app.use("/user",userRouter)
 app.use("/api/admin",adminRouter)
+app.use("/guest",guestRouter)
 
 const PORT=3000;
 app.listen(PORT,()=>{

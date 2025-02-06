@@ -6,7 +6,7 @@ const bcrypt=require('bcrypt')
 const userRouter=express.Router();
 const dotenv =require("dotenv");
 const { Event } = require("../model/EventModel");
-const { authMiddleware } = require("../Middleware");
+const { authMiddleware } = require("../Middlewares/Middleware");
 const session=require("express-session")
 dotenv.config();
 

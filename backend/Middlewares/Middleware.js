@@ -15,7 +15,9 @@ const authMiddleware = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-
+        if (decoded.role === "guest") {
+            return res.status(403).json({ message: "Guests are not allowed to perform this action" });
+        }
         req.userId = decoded._id;
 
         next(); 
