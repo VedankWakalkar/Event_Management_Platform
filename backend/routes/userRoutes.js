@@ -306,7 +306,7 @@ userRouter.post("/api/events/:id/register",authMiddleware,async(req,res)=>{
     }
 })
 
-userRouter.get("api/events/:id/registrations",authMiddleware,async (req,res)=>{
+userRouter.get("/api/events/:id/registrations",authMiddleware,async (req,res)=>{
     try{
         const {id}=req.params;
         const userId=req.userId;
