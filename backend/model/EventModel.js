@@ -28,7 +28,11 @@ const EventSchema= new mongoose.Schema(
             type:Date,
             default:Date.now
         },
-        registeredUser:[{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+        registeredUser:[{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        thumbnail:{
+            type:String,
+            default:null,
+        }
     }
 )
 

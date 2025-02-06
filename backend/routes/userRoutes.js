@@ -7,7 +7,8 @@ const userRouter=express.Router();
 const dotenv =require("dotenv");
 const { Event } = require("../model/EventModel");
 const { authMiddleware } = require("../Middlewares/Middleware");
-const session=require("express-session")
+const session=require("express-session");
+const upload = require("../config/multerConfig");
 dotenv.config();
 
 const JWT_SECRET=process.env.JWT_SECRET;
@@ -31,7 +32,7 @@ const eventCreateSchema=zod.object({
     location: zod.string().min(4, "Location must be at least 4 characters"),
 })
 
-userRouter.post("/api/auth/register", async (req,res)=>{
+userRouter.post("/api/auth/register",upload.single("profilePhoto"), async (req,res)=>{
     try{
     const {success}=userInputSchema.safeParse(req.body);
     console.log("Zod validation Success : ",success);
@@ -48,14 +49,16 @@ userRouter.post("/api/auth/register", async (req,res)=>{
             message:"User Already Registered!"
         })
     }
-
+    const profilePhoto=req.file? req.file.path:null;
     const hashedPassword= await bcrypt.hash(req.body.password,12);
 
     const newUser=await User.create({
         ...req.body,
-        password:hashedPassword
+        password:hashedPassword,
+        profilePhoto:profilePhoto
     })
-    
+    await newUser.save();
+
     const token= jwt.sign({_id: newUser._id},JWT_SECRET,{ expiresIn: "1h" });
 
     res.status(201).json({
@@ -134,7 +137,7 @@ userRouter.post("/api/auth/logout",(req,res)=>{
     })
 })
 
-userRouter.post("/api/events",authMiddleware,async (req,res)=>{
+userRouter.post("/api/events",authMiddleware,upload.single("thumbnail"),async (req,res)=>{
     try{
         console.log("Session at event creation:", req.session);  // 🔍 Debug
         console.log("Session Token at event creation:", req.session.token);
@@ -153,12 +156,13 @@ userRouter.post("/api/events",authMiddleware,async (req,res)=>{
                 message:"Event has been already registered."
             })
         }
-
+        const thumbnail = req.file ? req.file.path : null;
         const newEvent= await Event.create({
             ...req.body,
-            createdBy:req.userId
+            createdBy:req.userId,
+            thumbnail:thumbnail
         })
-
+        await newEvent.save();        
         res.status(201).json({
             message:"Event Created Successfully",
             Event:{

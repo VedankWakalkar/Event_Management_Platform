@@ -8,6 +8,8 @@ const { adminRouter } = require("./routes/adminRoutes");
 const { guestRouter } = require("./routes/guestRoute");
 dotenv.config()
 
+require("./config/cloudinaryConfig"); 
+
 const app=express();
 app.use(cors())
 app.use(express.json())
